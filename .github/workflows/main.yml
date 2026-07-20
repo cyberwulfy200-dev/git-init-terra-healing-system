@@ -1,0 +1,45 @@
+name: Terra Healing System
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  terra-healing-main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Run Main Terra System
+        run: timeout 90 python3 main.py
+
+      - name: Run Extended Terra System
+        run: timeout 60 python3 terra_system.py
+
+      - name: Run YouTube Integration
+        run: timeout 60 python3 integration.py
+
+      - name: Generate Status Report
+        run: |
+          echo "Terra Healing System Activation Complete"
+          echo "Activation Time: $(date)" >> ACTIVATION_LOG.txt
+
+      - name: Commit Results
+        run: |
+          git config user.name "Terra Healing Bot"
+          git config user.email "healing@earth"
+          git add ACTIVATION_LOG.txt
+          git diff --cached --quiet || git commit -m "Update activation log"
+          git push
